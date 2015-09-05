@@ -4,6 +4,7 @@ library(ggplot2)
 library(ggthemes)
 
 # Helper for reading numeric data with commas
+setClass("num.with.commas")
 setAs("character", "num.with.commas", function(from) as.numeric(gsub(",", "", from)))
 
 # Load data
@@ -20,7 +21,8 @@ imports = data.frame(month = character(0),
                      stringsAsFactors = FALSE)
 exportSuffix = "_Exports_HS10_by_Country.csv"
 importSuffix = "_Imports_HS10_by_Country.csv"
-for (i in 2000:2000) {
+for (i in 2000:2014) {
+  print(i)
   exportFile = paste("data/", i, exportSuffix, sep="")
   exportData = read.csv(exportFile, 
                         stringsAsFactors = FALSE, 
@@ -55,4 +57,4 @@ for (i in 2000:2000) {
   imports = rbind(imports, importData)
 }
 
-rm(exportData, importData)
+rm(exportData, importData, exportFile, exportSuffix, i, importFile, importSuffix)

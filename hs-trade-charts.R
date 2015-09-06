@@ -1,5 +1,6 @@
 # Load libraries
 library(dplyr)
+library(tidyr)
 library(ggplot2)
 library(ggthemes)
 
@@ -38,7 +39,7 @@ for (i in 2000:2014) {
                                        "Total.Exports...NZD.fob." = "NULL", 
                                        "Total.Exports.Qty" = "NULL", 
                                        "Status" = "NULL"))
-  names(exportData) = c("month", "code", "country", "value_fob")
+  names(exportData) = c("date", "code", "country", "value_fob")
   exports = rbind(exports, exportData)
   
   importFile = paste("data/", i, importSuffix, sep="")
@@ -53,8 +54,16 @@ for (i in 2000:2014) {
                                        "Imports...NZD.cif." = "num.with.commas", 
                                        "Imports.Qty" = "NULL", 
                                        "Status" = "NULL"))
-  names(importData) = c("month", "code", "country", "value_vfd", "value_cif")
+  names(importData) = c("date", "code", "country", "value_vfd", "value_cif")
   imports = rbind(imports, importData)
 }
 
 rm(exportData, importData, exportFile, exportSuffix, i, importFile, importSuffix)
+
+# Split date into month & year, and convert back to numbers
+exports = exports %>% separate(date, c("year", "month"), sep = 4)
+imports = imports %>% separate(date, c("year", "month"), sep = 4)
+exports$year = as.numeric(exports$year)
+exports$month = as.numeric(exports$month)
+imports$year = as.numeric(imports$year)
+imports$month = as.numeric(imports$month)

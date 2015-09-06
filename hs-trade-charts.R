@@ -4,66 +4,76 @@ library(tidyr)
 library(ggplot2)
 library(ggthemes)
 
-# Helper for reading numeric data with commas
-setClass("num.with.commas")
-setAs("character", "num.with.commas", function(from) as.numeric(gsub(",", "", from)))
-
-# Load data
-exports = data.frame(month = character(0), 
-                     code = character(0), 
-                     country = character(0), 
-                     value_fob = numeric(0), 
-                     stringsAsFactors = FALSE)
-imports = data.frame(month = character(0), 
-                     code = character(0), 
-                     country = character(0), 
-                     value_vfd = numeric(0), 
-                     value_cif = numeric(0), 
-                     stringsAsFactors = FALSE)
-exportSuffix = "_Exports_HS10_by_Country.csv"
-importSuffix = "_Imports_HS10_by_Country.csv"
-for (i in 2000:2014) {
-  print(i)
-  exportFile = paste("data/", i, exportSuffix, sep="")
-  exportData = read.csv(exportFile, 
-                        stringsAsFactors = FALSE, 
-                        sep = ",", quote = "\"", 
-                        colClasses = c("Month" = "character", 
-                                       "Harmonised.System.Code" = "character", 
-                                       "Harmonised.System.Description" = "NULL", 
-                                       "Unit.Qty" = "NULL", 
-                                       "Exports...NZD.fob." = "num.with.commas", 
-                                       "Exports.Qty" = "NULL", 
-                                       "Re.exports...NZD.fob." = "NULL", 
-                                       "Re.exports.Qty" = "NULL", 
-                                       "Total.Exports...NZD.fob." = "NULL", 
-                                       "Total.Exports.Qty" = "NULL", 
-                                       "Status" = "NULL"))
-  names(exportData) = c("date", "code", "country", "value_fob")
-  exports = rbind(exports, exportData)
+# Set up dataframes and other stuff
+tradeSetup = function() {
+  exports <<- data.frame(month = character(0), 
+                       code = character(0), 
+                       country = character(0), 
+                       value_fob = numeric(0), 
+                       stringsAsFactors = FALSE)
+  imports <<- data.frame(month = character(0), 
+                       code = character(0), 
+                       country = character(0), 
+                       value_vfd = numeric(0), 
+                       value_cif = numeric(0), 
+                       stringsAsFactors = FALSE)
   
-  importFile = paste("data/", i, importSuffix, sep="")
-  importData = read.csv(importFile, 
-                        stringsAsFactors = FALSE, 
-                        sep = ",", quote = "\"", 
-                        colClasses = c("Month" = "character", 
-                                       "Harmonised.System.Code" = "character", 
-                                       "Harmonised.System.Description" = "NULL", 
-                                       "Unit.Qty" = "NULL", 
-                                       "Imports...NZD.vfd." = "num.with.commas", 
-                                       "Imports...NZD.cif." = "num.with.commas", 
-                                       "Imports.Qty" = "NULL", 
-                                       "Status" = "NULL"))
-  names(importData) = c("date", "code", "country", "value_vfd", "value_cif")
-  imports = rbind(imports, importData)
+  # Helper for reading numeric data with commas
+  setClass("num.with.commas")
+  setAs("character", "num.with.commas", function(from) as.numeric(gsub(",", "", from)))
 }
 
-rm(exportData, importData, exportFile, exportSuffix, i, importFile, importSuffix)
+# Load data from CSV files
+loadTradeData = function() {
+  exportSuffix = "_Exports_HS10_by_Country.csv"
+  importSuffix = "_Imports_HS10_by_Country.csv"
+  for (i in 2000:2014) {
+    print(i)
+    exportFile = paste("data/", i, exportSuffix, sep="")
+    exportData = read.csv(exportFile, 
+                          stringsAsFactors = FALSE, 
+                          sep = ",", quote = "\"", 
+                          colClasses = c("Month" = "character", 
+                                         "Harmonised.System.Code" = "character", 
+                                         "Harmonised.System.Description" = "NULL", 
+                                         "Unit.Qty" = "NULL", 
+                                         "Exports...NZD.fob." = "num.with.commas", 
+                                         "Exports.Qty" = "NULL", 
+                                         "Re.exports...NZD.fob." = "NULL", 
+                                         "Re.exports.Qty" = "NULL", 
+                                         "Total.Exports...NZD.fob." = "NULL", 
+                                         "Total.Exports.Qty" = "NULL", 
+                                         "Status" = "NULL"))
+    names(exportData) = c("date", "code", "country", "value_fob")
+    exports = rbind(exports, exportData)
+    
+    importFile = paste("data/", i, importSuffix, sep="")
+    importData = read.csv(importFile, 
+                          stringsAsFactors = FALSE, 
+                          sep = ",", quote = "\"", 
+                          colClasses = c("Month" = "character", 
+                                         "Harmonised.System.Code" = "character", 
+                                         "Harmonised.System.Description" = "NULL", 
+                                         "Unit.Qty" = "NULL", 
+                                         "Imports...NZD.vfd." = "num.with.commas", 
+                                         "Imports...NZD.cif." = "num.with.commas", 
+                                         "Imports.Qty" = "NULL", 
+                                         "Status" = "NULL"))
+    names(importData) = c("date", "code", "country", "value_vfd", "value_cif")
+    imports = rbind(imports, importData)
+  }
+  
+  # rm(exportData, importData, exportFile, exportSuffix, i, importFile, importSuffix)
+  
+  # Split date into month & year, and convert back to numbers
+  exports = exports %>% separate(date, c("year", "month"), sep = 4)
+  imports = imports %>% separate(date, c("year", "month"), sep = 4)
+  exports$year = as.numeric(exports$year)
+  exports$month = as.numeric(exports$month)
+  imports$year = as.numeric(imports$year)
+  imports$month = as.numeric(imports$month)
+}
 
-# Split date into month & year, and convert back to numbers
-exports = exports %>% separate(date, c("year", "month"), sep = 4)
-imports = imports %>% separate(date, c("year", "month"), sep = 4)
-exports$year = as.numeric(exports$year)
-exports$month = as.numeric(exports$month)
-imports$year = as.numeric(imports$year)
-imports$month = as.numeric(imports$month)
+# Main code
+tradeSetup()
+loadTradeData()

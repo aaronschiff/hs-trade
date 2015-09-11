@@ -4,6 +4,35 @@ library(tidyr)
 library(ggplot2)
 library(ggthemes)
 
+# Custom theme for ggplot
+mytheme = function(base_size = 10, base_family = "sans") {
+  (
+    theme_foundation(base_size = base_size, base_family = base_family) + 
+      theme(
+        # Plot
+        plot.title = element_text(face = "bold", vjust = 1), 
+        plot.title = element_text(vjust = 1, size = 10), 
+        
+        # Axes
+        axis.line.y = element_blank(), 
+        axis.line.x = element_blank(), 
+        axis.ticks = element_line(colour = "#666666"), 
+        axis.ticks.y = element_blank(), 
+        axis.title = element_text(face = "italic"), 
+        axis.title.y = element_text(vjust = 1, hjust = 0.1), 
+        axis.title.x = element_text(hjust = 1, vjust = 0.1), 
+        axis.text.x = element_text(vjust = 0), 
+        
+        # Panel
+        panel.grid.major.y = element_line(colour = "#f2f2f2"), 
+        panel.grid.major.x = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.border = element_rect(colour = NA), 
+        panel.background = element_rect(colour = NA)
+      )
+  )
+}
+
 # Load data from CSV files
 loadTradeData = function() {
   exports <<- data.frame(month = character(0), 
@@ -59,8 +88,6 @@ loadTradeData = function() {
     names(importData) = c("date", "code", "country", "value_vfd", "value_cif")
     imports <<- rbind(imports, importData)
   }
-  
-  # rm(exportData, importData, exportFile, exportSuffix, i, importFile, importSuffix)
   
   # Split date into month & year, and convert back to numbers
   exports <<- exports %>% separate(date, c("year", "month"), sep = 4)

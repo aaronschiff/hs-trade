@@ -28,7 +28,10 @@ mytheme = function(base_size = 10, base_family = "sans") {
         panel.grid.major.x = element_blank(), 
         panel.grid.minor = element_blank(), 
         panel.border = element_rect(colour = NA), 
-        panel.background = element_rect(colour = NA)
+        panel.background = element_rect(colour = NA), 
+        
+        # Facets
+        strip.background = element_blank()
       )
   )
 }
@@ -99,6 +102,7 @@ loadTradeData = function() {
 }
 
 smallMultiplesByCountry = function() {
+  # Prepare the data 
   groupedExports = group_by(exports, country, year)
   groupedImports = group_by(imports, country, year)
   
@@ -107,10 +111,22 @@ smallMultiplesByCountry = function() {
   totalImportsByCountry = summarise(groupedImports, value_fob = sum(value_cif))
   totalImportsByCountry = arrange(totalImportsByCountry, country, year)
   
+  # Set up graphics parameters
+  panelWidth = 200    # Pixel width of individual plot
+  panelHeight = 100    # Pixel height of individual plot
+  numPanels = length(unique(groupedExports$country))  # Number of plots
+  numPanelsPerRow = 6
+  png("exports-small-multiples.png", width = panelWidth * numPanelsPerRow, height = panelHeight * ceiling(numPanels / numPanelsPerRow))
+  
+  # Draw small multiples
   p1 = ggplot(data = totalExportsByCountry, aes(x = year, y = value_fob)) +
-    geom_line() + 
-    facet_wrap(~ country, ncol = 10)
+    geom_bar(stat = "identity") + 
+    facet_wrap(~ country, ncol = numPanelsPerRow) + 
+    mytheme(base_family = "Fira Sans", base_size = 18)
   print(p1)
+  
+  # Save output
+  dev.off()
 }
 
 # Main code

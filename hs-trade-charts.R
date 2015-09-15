@@ -8,6 +8,10 @@ library(grid)
 # Load exports & imports data from CSV files
 # Note only certain columns are loaded, the others are set to NULL in the colClasses definition
 loadTradeData = function() {
+  # Set year range
+  firstYear = 2001
+  lastYear = 2014
+  
   exports <<- data.frame(month = character(0), 
                          code = character(0), 
                          country = character(0), 
@@ -25,7 +29,7 @@ loadTradeData = function() {
   
   exportSuffix = "_Exports_HS10_by_Country.csv"
   importSuffix = "_Imports_HS10_by_Country.csv"
-  for (i in 2000:2014) {
+  for (i in firstYear:lastYear) {
     print(i)
     exportFile = paste("data/", i, exportSuffix, sep="")
     exportData = read.csv(exportFile, 
